@@ -1,0 +1,24 @@
+{
+  "validator_config": {
+    "validator_ins_private_key": "18c6687d8bdbdcf9df7cdddc2a49aff15546cb83588c9931951c237657eab8ce",
+    "validator_bsc_private_key": "b070d9e3ff1fb6bb4353d0933621f59a232b9ece48e33a2f085c5655b77cd244",
+    "bls_private_keys": [
+      "0cb5c2dd492758b1494919c7376d2cedaa41f923d431e4dcae8b66a388ba9d30"
+    ]
+  },
+  "ins_config": {
+    "rpc_url": "http://localhost:26657",
+    "grpc_url": "localhost:9090",
+    "src_chain_id": 1,
+    "dest_chain_id": 1,
+    "to_address": "0x6D967dc83b625603c963713eABd5B43A281E595e"
+  },
+  "bsc_config": {
+    "provider": "http://127.0.0.1:8545",
+    "src_chain_id": 1,
+    "dest_chain_id": 1,
+    "channel_id": 1,
+    "gas_limit": 4700000,
+    "gas_price": 20000000000
+  }
+}
