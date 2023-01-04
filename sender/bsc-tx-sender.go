@@ -65,7 +65,7 @@ func (s *BscTxSender) getAggregatedSignatureAndValidatorBitset(payload []byte, v
 
 	var votes []*Vote
 
-	for _, blsPrivKey := range s.cfg.ValidatorConfig.BlsPrivateKeys {
+	for _, blsPrivKey := range s.cfg.RelayerConfig.BlsPrivateKeys {
 		signer, err := NewSigner(common.Hex2Bytes(blsPrivKey))
 		if err != nil {
 			return nil, nil, err

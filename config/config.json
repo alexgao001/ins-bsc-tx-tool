@@ -1,17 +1,17 @@
 {
-  "validator_config": {
-    "validator_ins_private_key": "18c6687d8bdbdcf9df7cdddc2a49aff15546cb83588c9931951c237657eab8ce",
-    "validator_bsc_private_key": "b070d9e3ff1fb6bb4353d0933621f59a232b9ece48e33a2f085c5655b77cd244",
+  "relayer_config": {
+    "relayer_ins_private_key": "17fae4920a2ff0d552afe4dc3d26418a39737eb4d94df191a1c74ed96a2a68e4",
+    "relayer_bsc_private_key": "b070d9e3ff1fb6bb4353d0933621f59a232b9ece48e33a2f085c5655b77cd244",
     "bls_private_keys": [
-      "0cb5c2dd492758b1494919c7376d2cedaa41f923d431e4dcae8b66a388ba9d30"
+      "7087ad70adc7058b8d8e9d317978e6f1cc9f7909d55eccb6e5c93bac0e3b38b5"
     ]
   },
   "ins_config": {
-    "rpc_url": "http://localhost:26657",
+    "rpc_url": "http://localhost:26750",
     "grpc_url": "localhost:9090",
     "src_chain_id": 1,
     "dest_chain_id": 1,
-    "to_address": "0x6D967dc83b625603c963713eABd5B43A281E595e"
+    "to_address": "0x15CffaD33ec9017E6Df0D064eDe2e0E158A013Aa"
   },
   "bsc_config": {
     "provider": "http://127.0.0.1:8545",

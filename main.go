@@ -27,7 +27,6 @@ func initFlags() {
 
 func main() {
 	initFlags()
-
 	var cfg *config.Config
 	txOnChain := viper.GetString(flagTxOnChain)
 	cfg = config.ParseConfigFromFile("config/config.json")

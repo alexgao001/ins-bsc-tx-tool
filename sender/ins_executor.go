@@ -3,6 +3,7 @@ package sender
 import (
 	"context"
 	"encoding/binary"
+	"encoding/hex"
 	"fmt"
 	"github.com/cosmos/cosmos-sdk/codec"
 	"github.com/cosmos/cosmos-sdk/codec/types"
@@ -106,6 +107,7 @@ func (e *InscriptionExecutor) GetLatestBlockHeight() (uint64, error) {
 }
 
 func (e *InscriptionExecutor) GetNextOracleSequence() (uint64, error) {
+	//TODO confirm path to and key to retrive from store
 	path := fmt.Sprintf("/store/%s/%s", SequenceStoreName, "key")
 	key := BuildChannelSequenceKey(BSCChainId, 0x00)
 	response, err := e.rpcClient.ABCIQuery(context.Background(), path, key)
@@ -128,4 +130,16 @@ func (e *InscriptionExecutor) GetAccount(address string) (authtypes.AccountI, er
 		return nil, err
 	}
 	return account, nil
+}
+
+func (e *InscriptionExecutor) GetAccounts() (authtypes.AccountI, error) {
+	accountsRes, err := e.authClient.Accounts(context.Background(), &authtypes.QueryAccountsRequest{})
+	if err != nil {
+		return nil, err
+	}
+	for _, a := range accountsRes.GetAccounts() {
+		println(hex.EncodeToString(a.Value))
+	}
+
+	return nil, nil
 }

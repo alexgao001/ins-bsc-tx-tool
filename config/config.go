@@ -6,15 +6,15 @@ import (
 )
 
 type Config struct {
-	ValidatorConfig ValidatorConfig `json:"validator_config"`
-	InsConfig       InsConfig       `json:"ins_config"`
-	BscConfig       BscConfig       `json:"bsc_config"`
+	RelayerConfig RelayerConfig `json:"relayer_config"`
+	InsConfig     InsConfig     `json:"ins_config"`
+	BscConfig     BscConfig     `json:"bsc_config"`
 }
 
-type ValidatorConfig struct {
-	ValidatorInsPrivateKey string   `json:"validator_ins_private_key"`
-	ValidatorBscPrivateKey string   `json:"validator_bsc_private_key"`
-	BlsPrivateKeys         []string `json:"bls_private_keys"`
+type RelayerConfig struct {
+	RelayerInsPrivateKey string   `json:"relayer_ins_private_key"`
+	RelayerBscPrivateKey string   `json:"relayer_bsc_private_key"`
+	BlsPrivateKeys       []string `json:"bls_private_keys"`
 }
 
 type InsConfig struct {

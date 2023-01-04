@@ -1,6 +1,8 @@
 package sender
 
 import (
+	"encoding/hex"
+	"fmt"
 	"github.com/prysmaticlabs/prysm/crypto/bls/blst"
 	blscmn "github.com/prysmaticlabs/prysm/crypto/bls/common"
 )
@@ -28,5 +30,7 @@ func (signer *Signer) SignVote(vote *Vote, data []byte) error {
 	vote.EventHash = append(vote.EventHash, data[:]...)
 	copy(vote.PubKey[:], signer.pubKey.Marshal()[:])
 	copy(vote.Signature[:], signature.Marshal()[:])
+
+	fmt.Printf("sig is %s", hex.EncodeToString(vote.Signature[:]))
 	return nil
 }

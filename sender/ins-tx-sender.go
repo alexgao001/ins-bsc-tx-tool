@@ -4,12 +4,10 @@ import (
 	"context"
 	"fmt"
 	clitx "github.com/cosmos/cosmos-sdk/client/tx"
-	sdktypes "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/tx"
 	"github.com/cosmos/cosmos-sdk/types/tx/signing"
 	xauthsigning "github.com/cosmos/cosmos-sdk/x/auth/signing"
 	authtx "github.com/cosmos/cosmos-sdk/x/auth/tx"
-	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 	oracletypes "github.com/cosmos/cosmos-sdk/x/oracle/types"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 	"github.com/ethereum/go-ethereum/common"
@@ -38,14 +36,14 @@ func (s *InsTxSender) Send() (string, error) {
 	txBuilder := txConfig.NewTxBuilder()
 
 	payloadBts := common.Hex2Bytes("746573745061796c6f6164") // "testPayload"
-	privKey, _ := HexToEthSecp256k1PrivKey(s.cfg.ValidatorConfig.ValidatorInsPrivateKey)
+	privKey, _ := HexToEthSecp256k1PrivKey(s.cfg.RelayerConfig.RelayerInsPrivateKey)
 	validatorAddress := privKey.PubKey().Address().String()
 
-	fromAddress, _ := sdktypes.AccAddressFromHexUnsafe(validatorAddress)
-	toAddress, _ := sdktypes.AccAddressFromHexUnsafe(s.cfg.InsConfig.ToAddress)
+	//fromAddress, _ := sdktypes.AccAddressFromHexUnsafe(validatorAddress)
+	//toAddress, _ := sdktypes.AccAddressFromHexUnsafe(s.cfg.InsConfig.ToAddress)
 
-	msg := banktypes.NewMsgSend(fromAddress, toAddress, sdktypes.NewCoins(sdktypes.NewInt64Coin("stake", 10000)))
-	err := txBuilder.SetMsgs(msg)
+	//msg := banktypes.NewMsgSend(fromAddress, toAddress, sdktypes.NewCoins(sdktypes.NewInt64Coin("bnb", 1)))
+	//err := txBuilder.SetMsgs(msg)
 
 	validators, err := s.executor.QueryLatestValidators()
 	if err != nil {
@@ -53,7 +51,8 @@ func (s *InsTxSender) Send() (string, error) {
 	}
 	aggregatedSig, validatorBitset, err := s.getAggregatedSignatureAndValidatorBitset(payloadBts, validators)
 
-	seq, err := s.executor.GetNextOracleSequence()
+	//Todo fix
+	_, err = s.executor.GetNextOracleSequence()
 	if err != nil {
 		return "", nil
 	}
@@ -62,12 +61,13 @@ func (s *InsTxSender) Send() (string, error) {
 	msgClaim.FromAddress = validatorAddress
 	msgClaim.Payload = payloadBts
 	msgClaim.VoteAddressSet = validatorBitset.Bytes()
-	msgClaim.Sequence = seq
+	msgClaim.VoteAddressSet = append(msgClaim.VoteAddressSet, 0, 0, 0)
+	msgClaim.Sequence = 1
 	msgClaim.AggSignature = aggregatedSig
 	msgClaim.DestChainId = s.cfg.InsConfig.DestChainId
 	msgClaim.SrcChainId = s.cfg.InsConfig.SrcChainId
 	msgClaim.Timestamp = uint64(time.Now().Unix())
-	//err = txBuilder.SetMsgs(msgClaim)
+	err = txBuilder.SetMsgs(msgClaim)
 
 	fmt.Println(msgClaim.String())
 
@@ -137,7 +137,9 @@ func (s *InsTxSender) Send() (string, error) {
 			TxBytes: txBytes, // Proto-binary of the signed transaction, see previous step.
 		})
 
-	fmt.Println("log: ", txRes.TxResponse.RawLog) // Should be `0` if the tx is successful
+	fmt.Println("response code: ", txRes.TxResponse.Code) // Should be `0` if the tx is successful
+	fmt.Println("response string: ", txRes.TxResponse.String())
+
 	if err != nil {
 		return "", err
 	}
@@ -167,7 +169,7 @@ func (s *InsTxSender) getAggregatedSignatureAndValidatorBitset(payload []byte,
 
 	var votes []*Vote
 
-	for _, blsPrivKey := range s.cfg.ValidatorConfig.BlsPrivateKeys {
+	for _, blsPrivKey := range s.cfg.RelayerConfig.BlsPrivateKeys {
 		signer, err := NewSigner(common.Hex2Bytes(blsPrivKey))
 		if err != nil {
 			return nil, nil, err
@@ -191,6 +193,7 @@ func (s *InsTxSender) getAggregatedSignatureAndValidatorBitset(payload []byte,
 	}
 
 	aggregatedSignature, votedAddressSet, err := AggregatedSignatureAndValidatorBitSet(votes, validators)
+
 	valBitset := bitset.From([]uint64{votedAddressSet})
 
 	if err != nil {

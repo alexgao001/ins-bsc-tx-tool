@@ -15,7 +15,7 @@ import (
 )
 
 func getPrivateKey(cfg *config.Config) (*ecdsa.PrivateKey, error) {
-	privKey, err := crypto.HexToECDSA(cfg.ValidatorConfig.ValidatorBscPrivateKey)
+	privKey, err := crypto.HexToECDSA(cfg.RelayerConfig.RelayerBscPrivateKey)
 	if err != nil {
 		return nil, err
 	}

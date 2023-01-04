@@ -11,12 +11,7 @@ const (
 	destChainIDLength         = 2
 	channelIDLength           = 1
 
-	DefaultGasPrice = 20000000000 // 20 GWei
-
-	FallBehindThreshold          = 5
-	SleepSecondForUpdateClient   = 10
-	DataSeedDenyServiceThreshold = 60
-
+	DefaultGasPrice   = 20000000000 // 20 GWei
 	SequenceStoreName = "sc"
 )
 
