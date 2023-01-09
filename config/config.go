@@ -22,7 +22,6 @@ type InsConfig struct {
 	RpcUrl      string `json:"rpc_url"`
 	SrcChainId  uint32 `json:"src_chain_id"`
 	DestChainId uint32 `json:"dest_chain_id"`
-	ToAddress   string `json:"to_address"`
 }
 
 type BscConfig struct {

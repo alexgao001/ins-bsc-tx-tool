@@ -1,22 +1,22 @@
 {
   "relayer_config": {
-    "relayer_ins_private_key": "17fae4920a2ff0d552afe4dc3d26418a39737eb4d94df191a1c74ed96a2a68e4",
+    "relayer_ins_private_key": "9f052be7b77e40f632b3f6e2c39f778c29259d1a4935df189a8d13a9f20ce9f1",
     "relayer_bsc_private_key": "b070d9e3ff1fb6bb4353d0933621f59a232b9ece48e33a2f085c5655b77cd244",
     "bls_private_keys": [
-      "7087ad70adc7058b8d8e9d317978e6f1cc9f7909d55eccb6e5c93bac0e3b38b5"
+      "4ec7dcdfff9358eb5a7236b66abf700fb35ef747f3edc26043436e61ea6a23e4",
+      "16f6742aee55411cc79c06af0e265b9df5ba3b54de85fbfc96c7d6a67469e4d0"
     ]
   },
   "ins_config": {
     "rpc_url": "http://localhost:26750",
     "grpc_url": "localhost:9090",
-    "src_chain_id": 1,
-    "dest_chain_id": 1,
-    "to_address": "0x15CffaD33ec9017E6Df0D064eDe2e0E158A013Aa"
+    "src_chain_id": 2,
+    "dest_chain_id": 1
   },
   "bsc_config": {
     "provider": "http://127.0.0.1:8545",
     "src_chain_id": 1,
-    "dest_chain_id": 1,
+    "dest_chain_id": 2,
     "channel_id": 1,
     "gas_limit": 4700000,
     "gas_price": 20000000000

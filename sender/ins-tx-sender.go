@@ -41,7 +41,7 @@ func (s *InsTxSender) Send() (string, error) {
 
 	//fromAddress, _ := sdktypes.AccAddressFromHexUnsafe(validatorAddress)
 	//toAddress, _ := sdktypes.AccAddressFromHexUnsafe(s.cfg.InsConfig.ToAddress)
-
+	//
 	//msg := banktypes.NewMsgSend(fromAddress, toAddress, sdktypes.NewCoins(sdktypes.NewInt64Coin("bnb", 1)))
 	//err := txBuilder.SetMsgs(msg)
 
@@ -69,10 +69,8 @@ func (s *InsTxSender) Send() (string, error) {
 	msgClaim.Timestamp = uint64(time.Now().Unix())
 	err = txBuilder.SetMsgs(msgClaim)
 
-	fmt.Println(msgClaim.String())
-
 	if err != nil {
-		return "", err
+		panic(err)
 	}
 	txBuilder.SetGasLimit(210000)
 
@@ -103,7 +101,7 @@ func (s *InsTxSender) Send() (string, error) {
 	sig = signing.SignatureV2{}
 
 	signerData := xauthsigning.SignerData{
-		ChainID:       "inscription_9000-1",
+		ChainID:       "inscription_9000-121",
 		AccountNumber: accountNum,
 		Sequence:      accountSeq,
 	}

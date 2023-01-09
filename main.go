@@ -30,6 +30,8 @@ func main() {
 	var cfg *config.Config
 	txOnChain := viper.GetString(flagTxOnChain)
 	cfg = config.ParseConfigFromFile("config/config.json")
+
+	txOnChain = "ins"
 	if txOnChain == Inscription {
 		err := initInsTxSender(cfg)
 		if err != nil {

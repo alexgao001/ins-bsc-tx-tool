@@ -17,7 +17,7 @@ func HexToEthSecp256k1PrivKey(hexString string) (*ethsecp256k1.PrivKey, error) {
 
 func BuildChannelSequenceKey(destChainId ChainId, chanelId ChannelId) []byte {
 	key := make([]byte, prefixLength+destChainIDLength+channelIDLength)
-	copy(key[:prefixLength], prefixForSequenceKey)
+	copy(key[:prefixLength], PrefixForReceiveSequenceKey)
 	binary.BigEndian.PutUint16(key[prefixLength:prefixLength+destChainIDLength], uint16(destChainId))
 	copy(key[prefixLength+destChainIDLength:], []byte{byte(chanelId)})
 	return key

@@ -6,13 +6,13 @@ type ChainId uint16
 type ChannelId uint8
 
 const (
-	BSCChainId        ChainId = 0
+	BSCChainId        ChainId = 2
 	prefixLength              = 1
 	destChainIDLength         = 2
 	channelIDLength           = 1
 
 	DefaultGasPrice   = 20000000000 // 20 GWei
-	SequenceStoreName = "sc"
+	SequenceStoreName = "crosschain"
 )
 
 var (
@@ -21,7 +21,7 @@ var (
 )
 
 var (
-	prefixForSequenceKey = []byte{0xf0}
+	PrefixForReceiveSequenceKey = []byte{0xf1}
 )
 
 type MsgClaim struct {
