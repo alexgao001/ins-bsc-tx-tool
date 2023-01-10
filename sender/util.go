@@ -3,8 +3,10 @@ package sender
 import (
 	"encoding/binary"
 	"encoding/hex"
+	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/evmos/ethermint/crypto/ethsecp256k1"
 	ethHd "github.com/evmos/ethermint/crypto/hd"
+	"math/big"
 )
 
 func HexToEthSecp256k1PrivKey(hexString string) (*ethsecp256k1.PrivKey, error) {
@@ -23,10 +25,11 @@ func BuildChannelSequenceKey(destChainId ChainId, chanelId ChannelId) []byte {
 	return key
 }
 
-func GetPackage(channelId uint8, seq uint64, payload []byte) Package {
+func GetPackage(channelId uint8, seq uint64, ts uint64) Package {
+	payloadHeader := sdk.EncodePackageHeader(sdk.SynCrossChainPackageType, ts, *big.NewInt(1))
 	return Package{
 		ChannelId: channelId,
 		Sequence:  seq,
-		Payload:   payload,
+		Payload:   append(payloadHeader, []byte("test payload")...),
 	}
 }

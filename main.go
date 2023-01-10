@@ -55,10 +55,7 @@ func initInsTxSender(cfg *config.Config) error {
 	}
 
 	txSender := sender.NewInsTxSender(executor, cfg)
-	txHash, err := txSender.Send()
-	if err != nil {
-		return err
-	}
+	txHash := txSender.Send()
 	fmt.Printf("tx hash is %s", txHash)
 	return nil
 }

@@ -52,7 +52,6 @@ type InscriptionExecutor struct {
 }
 
 func NewInscriptionExecutor(rpcUri, grpcUri string) (*InscriptionExecutor, error) {
-
 	rpcClient, err := newRpcClient(rpcUri)
 	if err != nil {
 		return nil, err
@@ -107,9 +106,21 @@ func (e *InscriptionExecutor) GetLatestBlockHeight() (uint64, error) {
 }
 
 func (e *InscriptionExecutor) GetNextOracleSequence() (uint64, error) {
-	//TODO confirm path to and key to retrive from store
-	path := fmt.Sprintf("/store/%s/%s", SequenceStoreName, "key")
-	key := BuildChannelSequenceKey(BSCChainId, 0x00)
+	path := fmt.Sprintf("/store/crosschain/key")
+	key := BuildChannelSequenceKey(BSCChainId, 0)
+	response, err := e.rpcClient.ABCIQuery(context.Background(), path, key)
+	if err != nil {
+		return 0, err
+	}
+	if response.Response.Value == nil {
+		return 0, nil
+	}
+	return binary.BigEndian.Uint64(response.Response.Value), nil
+}
+
+func (e *InscriptionExecutor) GetNextSequenceForChannel(id ChannelId) (uint64, error) {
+	path := fmt.Sprintf("/store/crosschain/key")
+	key := BuildChannelSequenceKey(BSCChainId, id)
 	response, err := e.rpcClient.ABCIQuery(context.Background(), path, key)
 	if err != nil {
 		return 0, err

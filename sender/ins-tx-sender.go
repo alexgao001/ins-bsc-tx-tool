@@ -11,7 +11,6 @@ import (
 	oracletypes "github.com/cosmos/cosmos-sdk/x/oracle/types"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 	"github.com/ethereum/go-ethereum/common"
-	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/ethereum/go-ethereum/rlp"
 	"github.com/willf/bitset"
 	"ins-bsc-tx-tool/config"
@@ -30,45 +29,40 @@ func NewInsTxSender(e *InscriptionExecutor, cfg *config.Config) *InsTxSender {
 	}
 }
 
-func (s *InsTxSender) Send() (string, error) {
+func (s *InsTxSender) Send() string {
 
 	txConfig := authtx.NewTxConfig(s.executor.cdc, authtx.DefaultSignModes)
 	txBuilder := txConfig.NewTxBuilder()
-
-	payloadBts := common.Hex2Bytes("746573745061796c6f6164") // "testPayload"
 	privKey, _ := HexToEthSecp256k1PrivKey(s.cfg.RelayerConfig.RelayerInsPrivateKey)
 	validatorAddress := privKey.PubKey().Address().String()
-
-	//fromAddress, _ := sdktypes.AccAddressFromHexUnsafe(validatorAddress)
-	//toAddress, _ := sdktypes.AccAddressFromHexUnsafe(s.cfg.InsConfig.ToAddress)
-	//
-	//msg := banktypes.NewMsgSend(fromAddress, toAddress, sdktypes.NewCoins(sdktypes.NewInt64Coin("bnb", 1)))
-	//err := txBuilder.SetMsgs(msg)
-
 	validators, err := s.executor.QueryLatestValidators()
 	if err != nil {
-		return "", nil
+		panic(err)
 	}
-	aggregatedSig, validatorBitset, err := s.getAggregatedSignatureAndValidatorBitset(payloadBts, validators)
-
+	timestamp := time.Now().Unix()
 	//Todo fix
-	_, err = s.executor.GetNextOracleSequence()
+	oracleSeq, err := s.executor.GetNextOracleSequence()
+	oracleSeq = 1
 	if err != nil {
-		return "", nil
+		panic(err)
+	}
+
+	aggregatedSig, validatorBitset, blsClaim, err := s.getAggregatedSignatureAndValidatorBitset(oracleSeq, uint64(timestamp), s.cfg.InsConfig.SrcChainId, s.cfg.InsConfig.DestChainId, validators)
+	if err != nil {
+		panic(err)
 	}
 
 	msgClaim := &oracletypes.MsgClaim{}
 	msgClaim.FromAddress = validatorAddress
-	msgClaim.Payload = payloadBts
+	msgClaim.Payload = blsClaim.Payload
 	msgClaim.VoteAddressSet = validatorBitset.Bytes()
 	msgClaim.VoteAddressSet = append(msgClaim.VoteAddressSet, 0, 0, 0)
-	msgClaim.Sequence = 1
+	msgClaim.Sequence = oracleSeq
 	msgClaim.AggSignature = aggregatedSig
 	msgClaim.DestChainId = s.cfg.InsConfig.DestChainId
 	msgClaim.SrcChainId = s.cfg.InsConfig.SrcChainId
-	msgClaim.Timestamp = uint64(time.Now().Unix())
+	msgClaim.Timestamp = uint64(timestamp)
 	err = txBuilder.SetMsgs(msgClaim)
-
 	if err != nil {
 		panic(err)
 	}
@@ -76,7 +70,7 @@ func (s *InsTxSender) Send() (string, error) {
 
 	acct, err := s.executor.GetAccount(validatorAddress)
 	if err != nil {
-		return "", err
+		panic(err)
 	}
 	accountNum := acct.GetAccountNumber()
 	accountSeq := acct.GetSequence()
@@ -94,7 +88,7 @@ func (s *InsTxSender) Send() (string, error) {
 
 	err = txBuilder.SetSignatures(sig)
 	if err != nil {
-		return "", err
+		panic(err)
 	}
 
 	// Second round: all signer infos are set, so each signer can sign.
@@ -114,18 +108,18 @@ func (s *InsTxSender) Send() (string, error) {
 		accountSeq,
 	)
 	if err != nil {
-		return "", err
+		panic(err)
 	}
 
 	err = txBuilder.SetSignatures(sig)
 	if err != nil {
-		return "", err
+		panic(err)
 	}
 
 	txBytes, err := txConfig.TxEncoder()(txBuilder.GetTx())
 
 	if err != nil {
-		return "", err
+		panic(err)
 	}
 	//Broadcast transaction
 	txRes, err := s.executor.grpcTxClient.BroadcastTx(
@@ -139,14 +133,12 @@ func (s *InsTxSender) Send() (string, error) {
 	fmt.Println("response string: ", txRes.TxResponse.String())
 
 	if err != nil {
-		return "", err
+		panic(err)
 	}
-	return txRes.TxResponse.TxHash, nil
+	return txRes.TxResponse.TxHash
 }
 func (s *InsTxSender) simulateTx(txBytes []byte) error {
 	txClient := s.executor.grpcTxClient
-
-	// We then call the Simulate method on this client.
 	grpcRes, err := txClient.Simulate(
 		context.Background(),
 		&tx.SimulateRequest{
@@ -162,40 +154,49 @@ func (s *InsTxSender) simulateTx(txBytes []byte) error {
 	return nil
 }
 
-func (s *InsTxSender) getAggregatedSignatureAndValidatorBitset(payload []byte,
-	validators []stakingtypes.Validator) ([]byte, *bitset.BitSet, error) {
-
+func (s *InsTxSender) getAggregatedSignatureAndValidatorBitset(seq, ts uint64, srcChainId, destChainId uint32,
+	validators []stakingtypes.Validator) ([]byte, *bitset.BitSet, *BlsClaim, error) {
 	var votes []*Vote
-
+	blsClaim := BlsClaim{}
 	for _, blsPrivKey := range s.cfg.RelayerConfig.BlsPrivateKeys {
 		signer, err := NewSigner(common.Hex2Bytes(blsPrivKey))
 		if err != nil {
-			return nil, nil, err
+			return nil, nil, nil, err
 		}
 
 		var aggregatedPkgs Packages
 
-		for i := 0; i < 10; i++ {
-			pkg := GetPackage(1, uint64(i), payload)
+		pkgsSize := 5
+		channelId := 1
+		startPkgSeq, err := s.executor.GetNextSequenceForChannel(ChannelId(channelId))
+		for i := startPkgSeq; i < startPkgSeq+uint64(pkgsSize); i++ {
+			pkg := GetPackage(uint8(channelId), i, ts)
 			aggregatedPkgs = append(aggregatedPkgs, pkg)
 		}
-		encBts, _ := rlp.EncodeToBytes(aggregatedPkgs)
-		// Hash the rlp-encoded bytes, can eventHash
-		eventHash := crypto.Keccak256Hash(encBts).Bytes()
-		var vote Vote
-		err = signer.SignVote(&vote, eventHash)
+		encBts, err := rlp.EncodeToBytes(aggregatedPkgs)
 		if err != nil {
-			return nil, nil, err
+			return nil, nil, nil, err
+		}
+		blsClaim = BlsClaim{
+			SrcChainId:  srcChainId,
+			DestChainId: destChainId,
+			Timestamp:   ts,
+			Sequence:    seq,
+			Payload:     encBts,
+		}
+		eventHash := blsClaim.GetSignBytes()
+		var vote Vote
+		err = signer.SignVote(&vote, eventHash[:])
+		if err != nil {
+			return nil, nil, nil, err
 		}
 		votes = append(votes, &vote)
 	}
 
 	aggregatedSignature, votedAddressSet, err := AggregatedSignatureAndValidatorBitSet(votes, validators)
-
 	valBitset := bitset.From([]uint64{votedAddressSet})
-
 	if err != nil {
-		return nil, nil, err
+		return nil, nil, nil, err
 	}
-	return aggregatedSignature, valBitset, nil
+	return aggregatedSignature, valBitset, &blsClaim, nil
 }

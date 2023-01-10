@@ -1,10 +1,11 @@
 {
   "relayer_config": {
-    "relayer_ins_private_key": "9f052be7b77e40f632b3f6e2c39f778c29259d1a4935df189a8d13a9f20ce9f1",
+    "relayer_ins_private_key": "1dfddaef3b0bd41471e0e48240e9c4bcf1a3044be469869ff903c6081e8574e9",
     "relayer_bsc_private_key": "b070d9e3ff1fb6bb4353d0933621f59a232b9ece48e33a2f085c5655b77cd244",
     "bls_private_keys": [
-      "4ec7dcdfff9358eb5a7236b66abf700fb35ef747f3edc26043436e61ea6a23e4",
-      "16f6742aee55411cc79c06af0e265b9df5ba3b54de85fbfc96c7d6a67469e4d0"
+      "2b9422da725da69e407b8a3484ae622d28a20b55f1818f3013b34b0edc478c54",
+      "354d661122e3ae2e17b15e3cdecb3f5d54bb78009ca431e0247e7a2f49fa5745",
+      "0fdb6ed435515cbf4b72558a6f42d881fd99e0eddc719cb5890fbf1ec723bd0c"
     ]
   },
   "ins_config": {

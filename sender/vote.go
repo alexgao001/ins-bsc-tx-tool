@@ -33,6 +33,7 @@ func (vote *Vote) Verify(eventHash []byte) {
 func AggregatedSignatureAndValidatorBitSet(votes []*Vote, validators []stakingtypes.Validator) ([]byte, uint64, error) {
 	signatures := make([][]byte, 0, len(votes))
 	voteAddrSet := make(map[string]struct{}, len(votes))
+
 	var votedAddressSet uint64
 	for _, v := range votes {
 		voteAddrSet[hex.EncodeToString(v.PubKey[:])] = struct{}{}
@@ -46,8 +47,10 @@ func AggregatedSignatureAndValidatorBitSet(votes []*Vote, validators []stakingty
 	}
 
 	sigs, err := bls.MultipleSignaturesFromBytes(signatures)
+
 	if err != nil {
 		return nil, 0, err
 	}
+
 	return bls.AggregateSignatures(sigs).Marshal(), votedAddressSet, nil
 }
